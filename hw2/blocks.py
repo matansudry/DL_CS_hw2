@@ -82,7 +82,8 @@ class LeakyReLU(Block):
 
         # TODO: Implement the LeakyReLU operation.
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        alpha_x = x*self.alpha
+        out = torch.where(x>alpha_x, x, alpha_x)
         # ========================
 
         self.grad_cache["x"] = x
@@ -97,7 +98,10 @@ class LeakyReLU(Block):
 
         # TODO: Implement gradient w.r.t. the input x
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        ones = torch.ones(x.shape)
+        alpha = torch.ones(x.shape)*self.alpha
+        dx = torch.where(x>0, ones,alpha)
+        dx = dx * dout
         # ========================
 
         return dx
@@ -116,7 +120,7 @@ class ReLU(LeakyReLU):
 
     def __init__(self):
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        super().__init__(alpha=0)
         # ========================
 
     def __repr__(self):
@@ -142,7 +146,8 @@ class Sigmoid(Block):
         # TODO: Implement the Sigmoid function.
         #  Save whatever you need into grad_cache.
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        out= 1.0 / (1.0 + torch.exp(-x))
+        self.grad_cache['x'] = x
         # ========================
 
         return out
@@ -155,7 +160,8 @@ class Sigmoid(Block):
 
         # TODO: Implement gradient w.r.t. the input x
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        x = self.grad_cache['x']
+        dx = dout * (torch.ones_like(x) - self.forward(x))*self.forward(x)
         # ========================
 
         return dx
@@ -183,7 +189,9 @@ class TanH(Block):
         # TODO: Implement the tanh function.
         #  Save whatever you need into grad_cache.
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        self.grad_cache["x"] = x
+        out = torch.div(torch.exp(x) - torch.exp(-x), torch.exp(x) + torch.exp(-x))
+        self.out = out
         # ========================
 
         return out
@@ -196,7 +204,9 @@ class TanH(Block):
 
         # TODO: Implement gradient w.r.t. the input x
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        x = self.grad_cache["x"] 
+        dx =  1 - (self.out*self.out)
+        dx = dx * dout
         # ========================
 
         return dx
@@ -222,7 +232,8 @@ class Linear(Block):
 
         # TODO: Create the weight matrix (self.w) and bias vector (self.b).
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        self.w = wstd * torch.randn(out_features, in_features)
+        self.b = wstd * torch.randn(out_features)
         # ========================
 
         # These will store the gradients
@@ -242,7 +253,7 @@ class Linear(Block):
 
         # TODO: Compute the affine transform
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        out = torch.mm(x, torch.t(self.w)) + self.b
         # ========================
 
         self.grad_cache["x"] = x
@@ -261,7 +272,9 @@ class Linear(Block):
         #   - db, the gradient of the loss with respect to b
         #  Note: You should ACCUMULATE gradients in dw and db.
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        self.dw += torch.mm(torch.t(dout), x)
+        self.db += torch.sum(dout, dim=0)
+        dx = torch.mm(dout, self.w)
         # ========================
 
         return dx
@@ -302,7 +315,9 @@ class CrossEntropyLoss(Block):
         # TODO: Compute the cross entropy loss using the last formula from the
         #  notebook (i.e. directly using the class scores).
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        loss_obs = torch.log(torch.sum(torch.exp(x), dim=1)).unsqueeze(dim=1) - x.gather(1,torch.t(y.unsqueeze(dim=0)))
+        loss = torch.sum(loss_obs)
+        loss = loss / N
         # ========================
 
         self.grad_cache["x"] = x
@@ -321,7 +336,13 @@ class CrossEntropyLoss(Block):
 
         # TODO: Calculate the gradient w.r.t. the input x.
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        exp = torch.exp(x)
+        sum_exp = torch.sum(exp, dim=1).unsqueeze(dim=1)
+        exp_matrix = exp / sum_exp
+        y = y.unsqueeze(dim=1)
+        y_hat = torch.zeros(N, x.shape[1])
+        y_hat.scatter_(1, y, 1)
+        dx =(exp_matrix - y_hat ) /N
         # ========================
 
         return dx
@@ -380,7 +401,9 @@ class Sequential(Block):
         # TODO: Implement the forward pass by passing each block's output
         #  as the input of the next.
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        out = x
+        for block in self.blocks:
+            out = block.forward(out, **kw)
         # ========================
 
         return out
@@ -392,7 +415,9 @@ class Sequential(Block):
         #  Each block's input gradient should be the previous block's output
         #  gradient. Behold the backpropagation algorithm in action!
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        din = dout
+        for block in reversed(self.blocks):
+            din = block.backward(din)
         # ========================
 
         return din
@@ -402,7 +427,9 @@ class Sequential(Block):
 
         # TODO: Return the parameter tuples from all blocks.
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        for block in self.blocks:
+            for p in block.params():
+                params.append(p)
         # ========================
 
         return params
@@ -460,7 +487,20 @@ class MLP(Block):
 
         # TODO: Build the MLP architecture as described.
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        cnt = 0
+        temp = None
+        for hidden_feature in hidden_features:
+            if cnt == 0:
+                blocks.append(Linear(in_features, hidden_feature))
+            else:
+               blocks.append(Linear(temp, hidden_feature))
+            cnt +=1
+            temp = hidden_feature
+            if activation == "relu":
+                blocks.append(ReLU())
+            else:
+                blocks.append(Sigmoid())
+        blocks.append(Linear(temp, num_classes))
         # ========================
 
         self.sequence = Sequential(*blocks)
