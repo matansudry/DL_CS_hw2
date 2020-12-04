@@ -92,7 +92,9 @@ class MomentumSGD(Optimizer):
 
         # TODO: Add your own initializations as needed.
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        self.v = {}
+        for p, dp in self.params:
+            self.v[p] = torch.zeros_like(p)
         # ========================
 
     def step(self):
@@ -104,7 +106,9 @@ class MomentumSGD(Optimizer):
             # update the parameters tensor based on the velocity. Don't forget
             # to include the regularization term.
             # ====== YOUR CODE: ======
-            raise NotImplementedError()
+            dp += self.reg * p
+            self.v[p] = self.momentum * self.v[p] - self.learn_rate * dp
+            p += self.v[p]
             # ========================
 
 
@@ -125,7 +129,9 @@ class RMSProp(Optimizer):
 
         # TODO: Add your own initializations as needed.
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        self.r = {}
+        for p, dp in self.params:
+            self.r[p] = torch.zeros_like(p)
         # ========================
 
     def step(self):
@@ -138,5 +144,7 @@ class RMSProp(Optimizer):
             # average of it's previous gradients. Use it to update the
             # parameters tensor.
             # ====== YOUR CODE: ======
-            raise NotImplementedError()
+            dp += self.reg * p
+            self.r[p].mul_(self.decay).addcmul_(dp, dp, value=(1 - self.decay))
+            p.addcdiv_(dp, (self.r[p] + self.eps).sqrt(), value=(-self.learn_rate))
             # ========================

@@ -367,7 +367,11 @@ class Dropout(Block):
         #  Notice that contrary to previous blocks, this block behaves
         #  differently a according to the current training_mode (train/test).
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        if self.training_mode:
+            self.grad_cache['Mask'] = torch.distributions.bernoulli.Bernoulli(probs=(1-self.p)).sample(x.shape)
+        else:
+            self.grad_cache['Mask'] = torch.mul(torch.ones_like(x), 1 - self.p)
+        out = x * self.grad_cache['Mask']
         # ========================
 
         return out
@@ -375,7 +379,7 @@ class Dropout(Block):
     def backward(self, dout):
         # TODO: Implement the dropout backward pass.
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        dx = dout * self.grad_cache['Mask']
         # ========================
 
         return dx
@@ -402,9 +406,9 @@ class Sequential(Block):
         # TODO: Implement the forward pass by passing each block's output
         #  as the input of the next.
         # ====== YOUR CODE: ======
-        out = x
         for block in self.blocks:
-            out = block.forward(out, **kw)
+            x = block.forward(x, **kw)
+        out = x
         # ========================
 
         return out
@@ -488,20 +492,17 @@ class MLP(Block):
 
         # TODO: Build the MLP architecture as described.
         # ====== YOUR CODE: ======
-        cnt = 0
-        temp = None
-        for hidden_feature in hidden_features:
-            if cnt == 0:
-                blocks.append(Linear(in_features, hidden_feature))
-            else:
-                blocks.append(Linear(temp, hidden_feature))
-            cnt +=1
-            temp = hidden_feature
-            if activation == "relu":
-                blocks.append(ReLU())
-            else:
-                blocks.append(Sigmoid())
-        blocks.append(Linear(temp, num_classes))
+        layers = [in_features] + list(hidden_features) + [num_classes]
+        activation_module = ReLU if activation == "relu" else Sigmoid
+        for i, _ in enumerate(layers):
+            if i == len(layers) - 1:
+                break
+            blocks.append(Linear(layers[i], layers[i+1]))
+            if i >= len(layers) - 2:
+                break
+            blocks.append(activation_module())
+            if dropout > 0:
+                blocks.append(Dropout(p=dropout))
         # ========================
 
         self.sequence = Sequential(*blocks)
