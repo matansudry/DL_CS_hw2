@@ -253,6 +253,7 @@ class Linear(Block):
 
         # TODO: Compute the affine transform
         # ====== YOUR CODE: ======
+        x = x.reshape(x.shape[0], -1)
         out = torch.mm(x, torch.t(self.w)) + self.b
         # ========================
 
@@ -342,7 +343,7 @@ class CrossEntropyLoss(Block):
         y = y.unsqueeze(dim=1)
         y_hat = torch.zeros(N, x.shape[1])
         y_hat.scatter_(1, y, 1)
-        dx =(exp_matrix - y_hat ) /N
+        dx = (exp_matrix - y_hat)/N
         # ========================
 
         return dx
@@ -493,7 +494,7 @@ class MLP(Block):
             if cnt == 0:
                 blocks.append(Linear(in_features, hidden_feature))
             else:
-               blocks.append(Linear(temp, hidden_feature))
+                blocks.append(Linear(temp, hidden_feature))
             cnt +=1
             temp = hidden_feature
             if activation == "relu":

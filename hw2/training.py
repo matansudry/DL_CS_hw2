@@ -80,7 +80,32 @@ class Trainer(abc.ABC):
             #    save the model to the file specified by the checkpoints
             #    argument.
             # ====== YOUR CODE: ======
-            raise NotImplementedError()
+            actual_num_epochs += 1
+
+            # train
+            train_epoch_res = self.train_epoch(dl_train, verbose=verbose, **kw)
+            train_loss.append(sum(train_epoch_res.losses)/len(train_epoch_res.losses))
+            train_acc.append(train_epoch_res.accuracy)
+
+            # test
+            test_epoch_res = self.test_epoch(dl_test, verbose=verbose, **kw)
+            test_epoch_loss = sum(test_epoch_res.losses)/len(test_epoch_res.losses)
+            test_loss.append(test_epoch_loss)
+            test_acc.append(test_epoch_res.accuracy)
+
+            if checkpoints is not None:
+                torch.save(self.model, checkpoints)
+
+            if early_stopping is not None:
+                if epoch == 0:
+                    best_loss = float('inf')
+                if test_epoch_loss < best_loss:
+                    best_loss = test_epoch_loss
+                    epochs_without_improvement = 0
+                else:
+                    epochs_without_improvement += 1
+                if epochs_without_improvement >= early_stopping:
+                    break
             # ========================
 
         return FitResult(actual_num_epochs, train_loss, train_acc, test_loss, test_acc)
@@ -200,7 +225,21 @@ class BlocksTrainer(Trainer):
         #  - Calculate number of correct predictions (make sure it's an int,
         #    not a tensor) as num_correct.
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        # train model
+        self.model.train(True)
+        out = self.model.forward(X)
+        loss = self.loss_fn(out, y)
+        self.optimizer.zero_grad()
+        self.model.backward(self.loss_fn.backward(loss))
+        self.optimizer.step()
+
+        # evaluate model
+        with torch.no_grad():
+            self.model.train(False)
+            out = self.model.forward(X)
+            loss = float(self.loss_fn(out, y).data)
+            pred = torch.argmax(out, dim=1)
+            num_correct = int((y == pred).detach().sum())
         # ========================
 
         return BatchResult(loss, num_correct)
@@ -210,7 +249,12 @@ class BlocksTrainer(Trainer):
 
         # TODO: Evaluate the Block model on one batch of data.
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        with torch.no_grad():
+            self.model.train(False)
+            out = self.model.forward(X)
+            loss = self.loss_fn(out, y)
+            pred = torch.argmax(out, dim=1)
+            num_correct = int((y == pred).detach().sum())
         # ========================
 
         return BatchResult(loss, num_correct)
