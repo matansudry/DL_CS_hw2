@@ -1,7 +1,7 @@
 #!/bin/bash
 
 echo "***  STARTING EXPERIMENTS ***"
-K="64 128 256"
+K="32 64 128"
 for L in 3 6 9 12
 do
         exp_name="exp2"
