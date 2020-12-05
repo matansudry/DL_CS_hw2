@@ -77,6 +77,11 @@ class ConvClassifier(nn.Module):
         #  Note: If N is not divisible by P, then N mod P additional
         #  CONV->ACTs should exist at the end, without a POOL after them.
         # ====== YOUR CODE: ======
+        if 'kernel_size' not in self.conv_params:
+            self.conv_params=dict(kernel_size=3, stride=1, padding=1)
+        if 'kernel_size' not in self.pooling_params:
+            self.pooling_params=dict(kernel_size=2)
+
 
         # - extract number of conv layers
         N = len(self.channels)
@@ -391,6 +396,35 @@ class YourCodeNet(ConvClassifier):
     #  For example, add batchnorm, dropout, skip connections, change conv
     #  filter sizes etc.
     # ====== YOUR CODE: ======
-    #raise NotImplementedError()
+        in_channels = self.in_size[0]
+        main_layers = []
+        #shortcut_layers = []
 
+        #main path
+
+        # - extract number of conv layers
+        N = len(channels)
+
+        # - first conv layer 
+        main_layers.append(nn.Conv2d (in_channels, self.channels[0], kernel_size= 3, stride=1, padding=1, bias=True))
+        #main_layers.append(torch.nn.Dropout2d(p=dropout))
+        main_layers.append(torch.nn.BatchNorm2d(self.channels[0], eps=1e-05, momentum=0.1, affine=True))
+        main_layers.append(torch.nn.ReLU())
+
+        #middle layers
+        for i in range(1,N-1):
+            if i % pool_every == 0:
+                main_layers.append(torch.nn.MaxPool2d(kernel_size=(2, 2), stride=(2, 2), dilation=(1, 1), ceil_mode=False))
+                main_layers.append(torch.nn.Dropout2d(p=0.1))
+            main_layers.append(nn.Conv2d(channels[i-1], channels[i], kernel_size= 3, stride=1, padding=1, bias=True))
+            main_layers.append(nn.BatchNorm2d(channels[i], eps=1e-05, momentum=0.1, affine=True))
+            main_layers.append(nn.ReLU())
+        if N > 1:
+            main_layers.append(nn.Conv2d(channels[N-2], channels[N-1], kernel_size= 3, stride=1, padding=1, bias=True))
+        #if (in_channels != channels[N-1]):
+            #shortcut_layers.append(nn.Conv2d (in_channels, channels[N-1], kernel_size= 1, bias=False))
+        #shortcut_layers.append(torch.nn.BatchNorm2d(channels[N-1]))
+
+        self.main_path = nn.Sequential(*main_layers)
+        #self.shortcut_path = nn.Sequential(*shortcut_layers)
     # ========================
