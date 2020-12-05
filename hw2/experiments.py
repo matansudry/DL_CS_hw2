@@ -40,7 +40,7 @@ def run_experiment(
     pool_every=2,
     hidden_dims=[1024],
     model_type="cnn",
-    # You can add extra configuration for your experiments here
+    # You can add extra configuration for your experiments here    
     **kw,
 ):
     """
@@ -77,7 +77,11 @@ def run_experiment(
     #   for you automatically.
     fit_res = None
     # ====== YOUR CODE: ======
-        x0,_ = ds_train[0]
+    if 'conv_params' not in kw:
+        conv_params=dict(kernel_size=3, stride=1, padding=1)
+    if 'pooling_params' not in kw:
+        pooling_params=dict(kernel_size=2)
+    x0,_ = ds_train[0]
     num_classes = 10
     in_size= x0.shape
 
@@ -89,13 +93,14 @@ def run_experiment(
             for i in range(layers_per_block):
                 filters.append(k)
     
-    model =MODEL_TYPES[model_type](
+    model = model_cls(
             in_size=in_size,
             out_classes=num_classes,
             channels=filters,
             pool_every=pool_every,
             hidden_dims= hidden_dims,
-            conv_params=dict(kernel_size=3, stride=1, padding=1),
+            conv_params=conv_params,
+            pooling_params=pooling_params,
     ).to(device)
 
     loss_fn = torch.nn.CrossEntropyLoss()
