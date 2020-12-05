@@ -82,7 +82,6 @@ class ConvClassifier(nn.Module):
         if 'kernel_size' not in self.pooling_params:
             self.pooling_params=dict(kernel_size=2)
 
-
         # - extract number of conv layers
         N = len(self.channels)
 
