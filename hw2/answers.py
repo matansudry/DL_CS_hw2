@@ -113,9 +113,24 @@ part3_q1 = r"""
 
         total parameters in "Bottleneck" block is 70,016 parameters.
 
-2. ????????????????????
+2. In order to get the number of floating point operations in CONV2D layer we need to calacute $C_{in}, I_x, I_y, C_{out}, K_x$ and $K_y.$
+    the number of floating point operations is 2 * $C_{in} * I_x * I_y * K_x * K_y * C_{out}.$
+    a. "Regular" block:
+        conv layer with kernal size (3, 3), $K_x = K_y = 3, C_{out}= C_{in} = 256$ and total $2*256*3*3*256*I_x*I_y = 1,179,648*I_x*I_y$
+        we have 2 same layers so $1,179,648*I_x*I_y + 1,179,648*I_x*I_y = 2,359,296 *I_x*I_y$.
+        Relu will have $256 * I_x*I_y$.
+        Total = $2,359,808*I_x*I_y$.
 
-3. 
+    b. "Bottleneck" block:
+        The $1^{st}$ conv layer with kernal size $(1, 1), K_x=K_y=1, C_{in}=256$ and $C_{out}=64$ and total $2*256*1*1*64*I_x*I_y = 32,768$
+        The $2^{nd}$ conv layer with kernal size $(3, 3), K_x=K_y=3, C_{in}=64$ and $C_{out}=64$ and total $2*64*1*1*64*I_x*I_y = 73,728$
+        The $3^{rd}$ conv layer with kernal size (1, 1), $K_x$=$K_y$=3, $C_{in}$=64 and $C_{out}$=256 and total $2*64*1*1*256*I_x*I_y = 32,768$
+        The shortcat path is $256*I_x*I_y $
+        The Relu have $256 * I_x*I_y$.
+        Total = $139,776*I_x*I_y$ floating point operations
+ 
+
+3. ????????????????????
 """
 
 part3_q2 = r"""
