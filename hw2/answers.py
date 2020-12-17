@@ -9,17 +9,20 @@ math (delimited with $$).
 # Part 1 answers
 
 part1_q1 = r"""
-**Your answer:**
+1. x dim is N x din.
 
-```python
-1. x dim is N x din
-    W dim is Din x dout
-    z = xw, and his dim is N x dout
-    dz/dx dim is (N x din) x (N x dout)
-    based on that every input meets every output
+   W dim is Din x dout.
+   
+   z = xw, and his dim is N x dout
+   
+   dz/dx dim is (N x din) x (N x dout)
+   
+   based on that every input meets every output
+
 
 2. 4 byte per value and we have N^2 * din * dout * values
-    (2^7 * 2^7) * (2^10) * (2^11) * (2^2) = (2^37) = 128GB
+
+   (2^7 * 2^7) * (2^10) * (2^11) * (2^2) = (2^37) = 128GB
 """
 
 # ==============
@@ -70,29 +73,18 @@ def part2_dropout_hp():
 
 
 part2_q1 = r"""
-**Your answer:**
+1. The graphs matched our expectations.
+   we expected the model with no dropout to overfit the training set, and it did. it is aparent from the higher train accuracy and lower loss, in contrast to the test results. we can even see the test loss go up from the 2nd epoch.
+   the models with dropout showed closer train-test results.
 
-
-Write your answer using **markdown** and $\LaTeX$:
-```python
-# A code block
-a = 2
-```
-An equation:1111 $e^{i\pi} -1 = 0$
-
+2. surprisingly, the 0.8-dropout performed better then the 0.4-dropout, lower loss and slightly higher accuracy.
+   we can see the test accuracy of 0.4-dropout did not significantly improve since epoch 10 and the test loss even went up.
+   we can also see the 0.8-dropout loss keeps going down and the accuracy keeps improving, so training for a few more epochs could lead to the 0.8-dropout model performing significantly better then the 0.4-dropout model.
 """
 
 part2_q2 = r"""
-**Your answer:**
-
-
-Write your answer using **markdown** and $\LaTeX$:
-```python
-# A code block
-a = 2
-```
-An equation: $e^{i\pi} -1 = 0$
-
+it is possible, since the loss and accuracy evaluate the model in a numerically different way.
+the loss is calculated based on the raw model outputs, while the accuracy is measured via the argmax over the raw class scores and is not effected by the actual values.
 """
 # ==============
 
@@ -100,7 +92,6 @@ An equation: $e^{i\pi} -1 = 0$
 # Part 3 answers
 
 part3_q1 = r"""
-**Your answer:**
 1. In order to get the number of parameters in CONV2D layer we need to calacute $C_{in}, C_{out}, K_x$ and $K_y.$
     the number of parameters is ($C_{in} * K_x * K_y + 1)C_{out}.$
     a. "Regular" block:
@@ -129,7 +120,6 @@ part3_q1 = r"""
         The Relu have $256 * I_x*I_y$.
         Total = $139,776*I_x*I_y$ floating point operations
  
-
 3.  
     a.  The ability to combine the input spatially (within feature maps) is more strong in the regular block because every feature in the input will influence on 9x9  features in the output.
         differently from the bottleneck block that will influence on 3x3.
@@ -138,7 +128,6 @@ part3_q1 = r"""
 """
 
 part3_q2 = r"""
-**Your answer:**
 1.  In EXP 1.1 we can see that deeper the depth the ACC is lower, we think it happen beacuse there is more parameters in deeper networks.
     when you have too much parameters you can suffer from overfitting that cause them to lower ACC.
     the best depth is L2 with K32, the shortest one.
@@ -150,7 +139,6 @@ part3_q2 = r"""
 """
 
 part3_q3 = r"""
-**Your answer:**
 In experiment 1.2 we can see few things:
     1. when L=2
         a. almost all the networks start overfitting after 4 iterations, K=128 is still learning and start the pverfitting only in iteration 8
@@ -162,20 +150,16 @@ In experiment 1.2 we can see few things:
         a. all the networks start overfitting after 4-5 iterations
         b. K = 256 got the best ACC with almost 70%
     We can see from the experiment that when you are inceasing the L you need to increase the K in parallel.
-
 """
 
 part3_q4 = r"""
-**Your answer:**
 In experiment 1.3 we can see few things:
     1. all the networks start to overfit after 6-8 iterations
     2. L= 2 got the best ACC ~78%, althourgh L = 3,4 learned more EPOCHs.
     3. when you have more layers it takes more epochs to arrive to overfitting
-
 """
 
 part3_q5 = r"""
-**Your answer:**
 In experiment 1.4 we can see few things:
     1. K=[32] fixed with L=8,16,32 varying per run.
         a. L = 32 has too much parameters and he suffer from vanishing gradient with low ACC
@@ -191,20 +175,14 @@ In experiment 1.4 we can see few things:
 1.3 vs 1.4
     1. In L = 2 and 4,  1.4 has ACC little bit better with less epochs.
     2. shortcut is giving 1.4 better perfomence and avoding vanishing gradient.
-
-
-
 """
 
 part3_q6 = r"""
-**Your answer:**
 1. In our network we combined ResidualBlock with finetunning to parameters using Dropout (0.2) and BN.
     we can see that our network got ~80% ACC and didnt suffer from overfitting till EPOCH 35 minimum.
     ES was ajust to 5 epochs in row becuase sometims we have epochs the loss is increasing but we still not in the global minimum
 2. in exp 1.5 we got much better results, more than 6% from the best exp in part 1.
    tha main different is because we changed the ES and give the network chance to keep the decresing loss path, it is very importent to not stoping her too soon.
    beside of that we had knewledge from part 1 so we used it in part 2 and got better prefemnce from the start.
-
-
 """
 # ==============
