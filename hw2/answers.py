@@ -130,7 +130,11 @@ part3_q1 = r"""
         Total = $139,776*I_x*I_y$ floating point operations
  
 
-3. ????????????????????
+3.  
+    a.  The ability to combine the input spatially (within feature maps) is more strong in the regular block because every feature in the input will influence on 9x9  features in the output.
+        differently from the bottleneck block that will influence on 3x3.
+    b.  The ability to combine the input across feature maps is more in the bottleneck block because we are taking 256 channels and compress them to 64 and then increasing them to 256 so every channel influence more across the feature maps.
+        differently from regular block that stayed with the same channel all the way.
 """
 
 part3_q2 = r"""
